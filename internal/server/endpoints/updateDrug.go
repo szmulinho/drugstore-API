@@ -30,6 +30,12 @@ func (h *handlers) UpdateDrug(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Keep a map of which fields were present in the JSON so we don't overwrite
+	var payloadMap map[string]interface{}
+	if err := json.Unmarshal(reqBody, &payloadMap); err != nil {
+		payloadMap = map[string]interface{}{}
+	}
+
 	var existingDrug model.Drug
 	result := h.db.First(&existingDrug, DrugID)
 	if result.Error != nil {
@@ -37,8 +43,37 @@ func (h *handlers) UpdateDrug(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	existingDrug.Name = updatedDrug.Name
-	existingDrug.Price = updatedDrug.Price
+	// Update only fields present in payload (support lowercase and capitalized keys)
+	if _, ok := payloadMap["name"]; ok {
+		existingDrug.Name = updatedDrug.Name
+	}
+	if _, ok := payloadMap["Name"]; ok {
+		existingDrug.Name = updatedDrug.Name
+	}
+	if _, ok := payloadMap["price"]; ok {
+		existingDrug.Price = updatedDrug.Price
+	}
+	if _, ok := payloadMap["Price"]; ok {
+		existingDrug.Price = updatedDrug.Price
+	}
+	if _, ok := payloadMap["image"]; ok {
+		existingDrug.Image = updatedDrug.Image
+	}
+	if _, ok := payloadMap["Image"]; ok {
+		existingDrug.Image = updatedDrug.Image
+	}
+	if _, ok := payloadMap["type"]; ok {
+		existingDrug.Type = updatedDrug.Type
+	}
+	if _, ok := payloadMap["Type"]; ok {
+		existingDrug.Type = updatedDrug.Type
+	}
+	if _, ok := payloadMap["description"]; ok {
+		existingDrug.Description = updatedDrug.Description
+	}
+	if _, ok := payloadMap["Description"]; ok {
+		existingDrug.Description = updatedDrug.Description
+	}
 
 	result = h.db.Save(&existingDrug)
 	if result.Error != nil {
